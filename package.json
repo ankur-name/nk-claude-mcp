@@ -1,0 +1,20 @@
+{
+  "name": "nk-claude-mcp",
+  "version": "0.4.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP server: Acquisition Reco Hub ↔ Claude (stdio + Streamable HTTP)",
+  "scripts": {
+    "start": "node src/index.js",
+    "start:http": "node src/runHttp.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "dotenv": "^16.4.7",
+    "express": "^5.2.1",
+    "zod": "^3.24.2"
+  }
+}
