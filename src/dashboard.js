@@ -7,19 +7,23 @@ function requiredEnv(name) {
   }
   return String(value).trim();
 }
-export async function submitClaudeRecos(recos){
+
+/** Shared-secret auth for Dashboard Claude / Reco Hub calls (same pattern as GD inventory). */
+function dashboardHeaders(extra = {}) {
+  const key = requiredEnv("DASHBOARD_INTERNAL_KEY");
+  return {
+    Accept: "application/json",
+    "X-Internal-Service": key,
+    ...extra,
+  };
+}
+
+export async function submitClaudeRecos(recos) {
   const baseUrl = requiredEnv("DASHBOARD_BASE_URL").replace(/\/$/, "");
-  const token = requiredEnv("DASHBOARD_TOKEN").replace(/^Bearer\s+/i, "");
-  const provider = (process.env.DASHBOARD_AUTH_PROVIDER || "MICROSOFT").trim();
   const url = `${baseUrl}/v1/acqu-shortlisted-domains/claude-recos`;
   const response = await fetch(url, {
     method: "PUT",
-    headers: {
-      Accept: "application/json",
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      "X-Auth-Provider": provider,
-    },
+    headers: dashboardHeaders({ "Content-Type": "application/json" }),
     body: JSON.stringify({ recos }),
   });
   const text = await response.text();
@@ -31,8 +35,6 @@ export async function submitClaudeRecos(recos){
 
 export async function getApprovalFeedback({ searchDomains, size = 20 } = {}) {
   const baseUrl = requiredEnv("DASHBOARD_BASE_URL").replace(/\/$/, "");
-  const token = requiredEnv("DASHBOARD_TOKEN").replace(/^Bearer\s+/i, "");
-  const provider = (process.env.DASHBOARD_AUTH_PROVIDER || "MICROSOFT").trim();
   const params = new URLSearchParams({
     size: String(Math.min(Number(size) || 20, 50)),
   });
@@ -41,11 +43,7 @@ export async function getApprovalFeedback({ searchDomains, size = 20 } = {}) {
   }
   const url = `${baseUrl}/v1/acqu-shortlisted-domains/claude-reco-feedback?${params.toString()}`;
   const response = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-      "X-Auth-Provider": provider,
-    },
+    headers: dashboardHeaders(),
   });
   const text = await response.text();
   if (!response.ok) {
@@ -56,18 +54,12 @@ export async function getApprovalFeedback({ searchDomains, size = 20 } = {}) {
 
 export async function getOrderResults({ size = 20 } = {}) {
   const baseUrl = requiredEnv("DASHBOARD_BASE_URL").replace(/\/$/, "");
-  const token = requiredEnv("DASHBOARD_TOKEN").replace(/^Bearer\s+/i, "");
-  const provider = (process.env.DASHBOARD_AUTH_PROVIDER || "MICROSOFT").trim();
   const params = new URLSearchParams({
     size: String(Math.min(Number(size) || 20, 50)),
   });
   const url = `${baseUrl}/v1/acqu-shortlisted-domains/claude-order-results?${params.toString()}`;
   const response = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-      "X-Auth-Provider": provider,
-    },
+    headers: dashboardHeaders(),
   });
   const text = await response.text();
   if (!response.ok) {
@@ -86,8 +78,6 @@ export async function getRecoHubDomains({
   onlyMine = false,
 } = {}) {
   const baseUrl = requiredEnv("DASHBOARD_BASE_URL").replace(/\/$/, "");
-  const token = requiredEnv("DASHBOARD_TOKEN").replace(/^Bearer\s+/i, "");
-  const provider = (process.env.DASHBOARD_AUTH_PROVIDER || "MICROSOFT").trim();
 
   const params = new URLSearchParams({
     sourceType,
@@ -107,11 +97,7 @@ export async function getRecoHubDomains({
 
   const url = `${baseUrl}${RECO_HUB_PATH}?${params.toString()}`;
   const response = await fetch(url, {
-    headers: {
-      Accept: "application/json",
-      Authorization: `Bearer ${token}`,
-      "X-Auth-Provider": provider,
-    },
+    headers: dashboardHeaders(),
   });
 
   const text = await response.text();
